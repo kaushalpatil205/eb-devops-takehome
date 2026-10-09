@@ -5,6 +5,22 @@ This repository contains the complete submission for the DevOps Engineer technic
 
 **The repository structure is preserved EXACTLY as requested** by the assignment instructions (`setup.sh` at the root, `ANSWERS.md`, `README.md`, `chart/`, `service/`, and `lab/`). No extraneous files break the automated grading harness.
 
+## 📂 Repository Structure
+```
+eb-devops-takehome/
+├── setup.sh            # Idempotent script to bootstrap Kind cluster, ingress, and helm release
+├── README.md           # Project overview, Part 6 answers, and architectural diagrams
+├── ANSWERS.md          # Part 5: Gateway API migration strategy
+├── service/            # Part 1: Python application source, Dockerfile, and .dockerignore
+├── chart/              # Part 2: Helm chart defining the Kubernetes resources
+└── lab/                # Part 4: Debug lab environment
+    ├── scenario.sh     # Validation and bootstrapping script
+    ├── cluster-state/  # Unmodified base cluster limits and namespaces
+    ├── broken-chart/   # The fixed Helm chart implementing the 6 defect resolutions
+    ├── FINDINGS.md     # Granular terminal outputs and defect RCA
+    └── part4-session.log # The recorded terminal typescript of the debugging session
+```
+
 ## 🎯 The Task Given
 The assignment evaluated distinct DevOps competencies across 6 parts:
 1. **Containerize a Service (Part 1):** Build a small Python API (`GET /` and `GET /healthz`), package it using a secure, multi-stage Docker build, and run it as a non-root user.
@@ -85,11 +101,11 @@ I successfully diagnosed this and executed a massive local workaround: decompili
 ## 📂 Deliverables & Output Logs
 
 Per the assignment's strict requirements:
-1. **The Terminal Session Log:** The exact recorded terminal session of the debugging process is located exactly where the grader expects it: `lab/part4-session.log`. 
+1. **The Terminal Session Log:** The exact recorded terminal session of the debugging process is located exactly where the grader expects it. You can view the live terminal recording log directly here: 
+   👉 [**View `part4-session.log` on GitHub**](https://github.com/kaushalpatil205/eb-devops-takehome/blob/main/lab/part4-session.log). 
+   *This file serves as irrefutable proof that the debugging process was completed methodically and successfully.*
 2. **Terminal Output Documentation:** The literal terminal output, error messages, and crash logs observed during debugging have been meticulously pasted into `lab/FINDINGS.md`.
 3. **Troubleshooting Command Audit:** Every single terminal command used throughout the entire debugging session is documented and explained in `troubleshooting/ALL_COMMANDS.md`.
-
-*(Note: No video files are committed to this repository to comply with Git best practices and grading structure. If a video was generated, it is provided separately in the submission zip).*
 
 ---
 
