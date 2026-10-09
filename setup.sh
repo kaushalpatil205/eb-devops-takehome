@@ -2,7 +2,10 @@
 set -eo pipefail
 
 echo "[INFO] Bootstrapping kind cluster 'demo'..."
-cat << 'KIND' | kind create cluster --name demo --config=-
+if kind get clusters | grep -q "^demo$"; then
+  echo "[INFO] Cluster 'demo' already exists, skipping creation."
+else
+  cat << 'KIND' | kind create cluster --name demo --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
@@ -21,6 +24,7 @@ nodes:
     hostPort: 443
     protocol: TCP
 KIND
+fi
 
 echo "[INFO] Installing ingress-nginx..."
 helm upgrade --install ingress-nginx ingress-nginx \
