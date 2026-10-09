@@ -17,19 +17,10 @@ spec:
         {{- include "lab.labels" . | nindent 8 }}
     spec:
       serviceAccountName: {{ .Values.reporter.serviceAccountName }}
-      volumes:
-        - name: arm-binary
-          hostPath:
-            path: /usr/local/bin/arm-reporter
-            type: File
       containers:
         - name: reporter
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/patched/arm-reporter"]
-          volumeMounts:
-            - name: arm-binary
-              mountPath: /patched/arm-reporter
           ports:
             - name: http
               containerPort: {{ .Values.common.port }}
