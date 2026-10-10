@@ -103,7 +103,7 @@ The service is a highly lightweight Python `HTTPServer` answering with static JS
 
 - **Production-grade WSGI Server:** I used Python's built-in `http.server` for absolute simplicity and lack of external dependencies. **Risk:** It handles requests sequentially and blocks on I/O. Under load, this would cause severe latency.
 - **TLS/HTTPS:** The ingress does not have a TLS certificate configured. **Risk:** Traffic is unencrypted, susceptible to interception. 
-- **Automated CI/CD:** No GitHub Action for automated deployments. **Risk:** Manual deployments increase the risk of human error and configuration drift.
+- **Continuous Deployment (CD):** While a GitHub Actions CI pipeline is included to lint the chart, build the image, and scan for vulnerabilities via Trivy, automated *deployment* (e.g., ArgoCD) is omitted. **Risk:** Manual deployments to production increase the risk of configuration drift.
 
 ## 🚀 Part 6 Requirements: Path to Production
 

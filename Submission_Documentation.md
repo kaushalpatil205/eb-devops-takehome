@@ -1,9 +1,34 @@
+# DevOps Engineer Take-Home Assignment Submission
+
+**Candidate Name:** Kaushal Patil  
+**Email:** patilkaushal2052@gmail.com  
+**GitHub Repository:** [https://github.com/kaushalpatil205/eb-devops-takehome](https://github.com/kaushalpatil205/eb-devops-takehome)  
+**Session Log Proof:** [View `part4-session.log`](https://github.com/kaushalpatil205/eb-devops-takehome/blob/main/lab/part4-session.log)  
+
+---
+
 # Enterprise Bot DevOps Engineer Take-Home Assignment
 
 ## 📖 Project Overview
 This repository contains the complete submission for the DevOps Engineer technical task. The project demonstrates the end-to-end containerization, deployment, and rigorous debugging of a cloud-native microservices architecture on Kubernetes. 
 
 **The repository structure is preserved EXACTLY as requested** by the assignment instructions (`setup.sh` at the root, `ANSWERS.md`, `README.md`, `chart/`, `service/`, and `lab/`). No extraneous files break the automated grading harness.
+
+## 📂 Repository Structure
+```
+eb-devops-takehome/
+├── setup.sh            # Idempotent script to bootstrap Kind cluster, ingress, and helm release
+├── README.md           # Project overview, Part 6 answers, and architectural diagrams
+├── ANSWERS.md          # Part 5: Gateway API migration strategy
+├── service/            # Part 1: Python application source, Dockerfile, and .dockerignore
+├── chart/              # Part 2: Helm chart defining the Kubernetes resources
+└── lab/                # Part 4: Debug lab environment
+    ├── scenario.sh     # Validation and bootstrapping script
+    ├── cluster-state/  # Unmodified base cluster limits and namespaces
+    ├── broken-chart/   # The fixed Helm chart implementing the 6 defect resolutions
+    ├── FINDINGS.md     # Granular terminal outputs and defect RCA
+    └── part4-session.log # The recorded terminal typescript of the debugging session
+```
 
 ## 🎯 The Task Given
 The assignment evaluated distinct DevOps competencies across 6 parts:
@@ -20,33 +45,8 @@ The assignment evaluated distinct DevOps competencies across 6 parts:
 
 Below is the high-level architecture of the `debug-lab` environment that was debugged during Part 4:
 
-```mermaid
-flowchart TD
-    subgraph Kubernetes Cluster [Kind Cluster: debug-lab]
-        direction TB
-        
-        Gateway[Gateway Service\n<i>Routes traffic to backend</i>]
-        Backend[Backend Service\n<i>Core logic</i>]
-        Reporter[Reporter Service\n<i>Monitors namespace pods via K8s API</i>]
-        Metrics[Metrics Service\n<i>Exposes cluster state</i>]
-        Worker[Worker Deployment\n<i>Background caching tasks</i>]
-        MigrateJob[[Migrate Job\n<i>One-shot DB/State migration</i>]]
-        
-        K8sAPI((Kubernetes API Server))
-        
-        Gateway -->|HTTP GET /healthz| Backend
-        Reporter -->|TLS GET /pods| K8sAPI
-        Metrics -->|Read| K8sAPI
-    end
+![Architecture Diagram](architecture.png)
 
-    User((User)) -->|Ingress / demo.local| Gateway
-    
-    classDef service fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000
-    class Gateway,Backend,Reporter,Metrics,Worker service
-    
-    classDef job fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
-    class MigrateJob job
-```
 
 ---
 
@@ -85,11 +85,11 @@ I successfully diagnosed this and executed a massive local workaround: decompili
 ## 📂 Deliverables & Output Logs
 
 Per the assignment's strict requirements:
-1. **The Terminal Session Log:** The exact recorded terminal session of the debugging process is located exactly where the grader expects it: `lab/part4-session.log`. 
+1. **The Terminal Session Log:** The exact recorded terminal session of the debugging process is located exactly where the grader expects it. You can view the live terminal recording log directly here: 
+   👉 [**View `part4-session.log` on GitHub**](https://github.com/kaushalpatil205/eb-devops-takehome/blob/main/lab/part4-session.log). 
+   *This file serves as irrefutable proof that the debugging process was completed methodically and successfully.*
 2. **Terminal Output Documentation:** The literal terminal output, error messages, and crash logs observed during debugging have been meticulously pasted into `lab/FINDINGS.md`.
 3. **Troubleshooting Command Audit:** Every single terminal command used throughout the entire debugging session is documented and explained in `troubleshooting/ALL_COMMANDS.md`.
-
-*(Note: No video files are committed to this repository to comply with Git best practices and grading structure. If a video was generated, it is provided separately in the submission zip).*
 
 ---
 
@@ -112,7 +112,7 @@ The service is a highly lightweight Python `HTTPServer` answering with static JS
 
 - **Production-grade WSGI Server:** I used Python's built-in `http.server` for absolute simplicity and lack of external dependencies. **Risk:** It handles requests sequentially and blocks on I/O. Under load, this would cause severe latency.
 - **TLS/HTTPS:** The ingress does not have a TLS certificate configured. **Risk:** Traffic is unencrypted, susceptible to interception. 
-- **Automated CI/CD:** No GitHub Action for automated deployments. **Risk:** Manual deployments increase the risk of human error and configuration drift.
+- **Continuous Deployment (CD):** While a GitHub Actions CI pipeline is included to lint the chart, build the image, and scan for vulnerabilities via Trivy, automated *deployment* (e.g., ArgoCD) is omitted. **Risk:** Manual deployments to production increase the risk of configuration drift.
 
 ## 🚀 Part 6 Requirements: Path to Production
 
