@@ -1,3 +1,0 @@
-Name: Kaushal Patil
-Email: patilkaushal2052@gmail.com
-Assignment Submission Link: https://github.com/kaushalpatil205/eb-devops-takehome
