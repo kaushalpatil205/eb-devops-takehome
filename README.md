@@ -36,33 +36,8 @@ The assignment evaluated distinct DevOps competencies across 6 parts:
 
 Below is the high-level architecture of the `debug-lab` environment that was debugged during Part 4:
 
-```mermaid
-flowchart TD
-    subgraph Kubernetes Cluster [Kind Cluster: debug-lab]
-        direction TB
-        
-        Gateway[Gateway Service\n<i>Routes traffic to backend</i>]
-        Backend[Backend Service\n<i>Core logic</i>]
-        Reporter[Reporter Service\n<i>Monitors namespace pods via K8s API</i>]
-        Metrics[Metrics Service\n<i>Exposes cluster state</i>]
-        Worker[Worker Deployment\n<i>Background caching tasks</i>]
-        MigrateJob[[Migrate Job\n<i>One-shot DB/State migration</i>]]
-        
-        K8sAPI((Kubernetes API Server))
-        
-        Gateway -->|HTTP GET /healthz| Backend
-        Reporter -->|TLS GET /pods| K8sAPI
-        Metrics -->|Read| K8sAPI
-    end
+![Architecture Diagram](architecture.png)
 
-    User((User)) -->|Ingress / demo.local| Gateway
-    
-    classDef service fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000
-    class Gateway,Backend,Reporter,Metrics,Worker service
-    
-    classDef job fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
-    class MigrateJob job
-```
 
 ---
 
