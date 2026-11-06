@@ -1,0 +1,27 @@
+replicaCount: 2
+
+image:
+  repository: demo-service
+  pullPolicy: Never
+  tag: "latest"
+
+config:
+  appName: "demo-app"
+  version: "1.0.0"
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  className: "nginx"
+  host: "demo.local"
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
