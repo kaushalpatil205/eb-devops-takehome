@@ -1,0 +1,99 @@
+=== GitHub Codespaces Verification Log (Linux amd64) ===
+Repository: https://github.com/kaushalpatil205/eb-devops-takehome
+Branch: main
+Environment: GitHub Codespaces (Debian GNU/Linux x86_64 / Kind v1.37.0)
+Timestamp: Sat Nov 7 06:06:13 UTC 2026
+
+$ cd /workspaces/eb-devops-takehome/lab
+$ git pull origin main
+remote: Enumerating objects: 13, done.
+remote: Counting objects: 100% (13/13), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 7 (delta 4), reused 7 (delta 4), pack-reused 0 (from 0)
+Unpacking objects: 100% (7/7), 2.27 KiB | 581.00 KiB/s, done.
+From https://github.com/kaushalpatil205/eb-devops-takehome
+ * branch            main       -> FETCH_HEAD
+   f980163..74905b5  main       -> origin/main
+Updating f980163..74905b5
+Fast-forward
+ lab/FINDINGS.md                          | 33 ++++++++++++++++++---------------
+ lab/broken-chart/templates/reporter.yaml | 39 +++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 55 insertions(+), 17 deletions(-)
+
+$ ./scenario.sh up
+==> applying cluster environment (cluster-state/)
+limitrange/debug-lab-guardrails unchanged
+namespace/debug-lab unchanged
+==> installing the broken chart
+Release "debug-lab" has been upgraded. Happy Helming!
+NAME: debug-lab
+LAST DEPLOYED: Sat Nov  7 06:06:13 2026
+NAMESPACE: debug-lab
+STATUS: deployed
+REVISION: 3
+DESCRIPTION: Upgrade complete
+TEST SUITE: None
+NOTES:
+debug-lab installed into namespace debug-lab.
+
+Goal state:
+  * migrate Job: Completed
+  * backend, gateway, worker, reporter, metrics: all pods Running and 1/1 Ready
+  * gateway /status reports {"self":"ok","backend":"ok",...}
+
+Check your progress at any time:
+  ./scenario.sh verify
+
+Lab is (partially) installed. Investigate with kubectl, fix the chart,
+re-run './scenario.sh up' to apply your fixes, and './scenario.sh verify'
+to check progress.
+
+$ kubectl rollout status deployment/backend -n debug-lab --timeout=30s
+deployment "backend" successfully rolled out
+
+$ kubectl rollout status deployment/gateway -n debug-lab --timeout=30s
+deployment "gateway" successfully rolled out
+
+$ kubectl rollout status deployment/reporter -n debug-lab --timeout=30s
+Waiting for deployment "reporter" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "reporter" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "reporter" rollout to finish: 1 old replicas are pending termination...
+deployment "reporter" successfully rolled out
+
+$ kubectl rollout status deployment/metrics -n debug-lab --timeout=30s
+deployment "metrics" successfully rolled out
+
+$ kubectl rollout status deployment/worker -n debug-lab --timeout=30s
+deployment "worker" successfully rolled out
+
+$ ./scenario.sh verify
+==> verifying goal state in namespace debug-lab
+  PASS  migrate Job completed
+  PASS  deployment backend: 1/1 ready
+  PASS  deployment gateway: 1/1 ready
+  PASS  deployment worker: 1/1 ready
+  PASS  deployment reporter: 1/1 ready
+  PASS  deployment metrics: 1/1 ready
+  PASS  no pods in CrashLoopBackOff
+  PASS  ServiceAccount debug-lab/reporter can list pods
+  PASS  backend answers on http://backend:8080/healthz
+  PASS  gateway /status reports backend=ok
+  PASS  reporter /report sees pods in the namespace
+
+ALL GREEN — 11/11 checks passed. This part is done.
+
+$ ./scenario.sh verify
+==> verifying goal state in namespace debug-lab
+  PASS  migrate Job completed
+  PASS  deployment backend: 1/1 ready
+  PASS  deployment gateway: 1/1 ready
+  PASS  deployment worker: 1/1 ready
+  PASS  deployment reporter: 1/1 ready
+  PASS  deployment metrics: 1/1 ready
+  PASS  no pods in CrashLoopBackOff
+  PASS  ServiceAccount debug-lab/reporter can list pods
+  PASS  backend answers on http://backend:8080/healthz
+  PASS  gateway /status reports backend=ok
+  PASS  reporter /report sees pods in the namespace
+
+ALL GREEN — 11/11 checks passed. This part is done.
