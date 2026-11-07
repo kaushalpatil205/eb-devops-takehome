@@ -40,6 +40,9 @@ spec:
             initialDelaySeconds: 3
             periodSeconds: 5
             timeoutSeconds: 3
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
           securityContext:
             runAsNonRoot: true
             runAsUser: 65532
@@ -49,6 +52,9 @@ spec:
               drop: ["ALL"]
           resources:
             {{- toYaml .Values.reporter.resources | nindent 12 }}
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}
 ---
 apiVersion: v1
 kind: Service

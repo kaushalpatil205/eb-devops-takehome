@@ -128,3 +128,28 @@ I changed `common.port: 8080` to `common.port: 8081` in `values.yaml`. This ensu
 **How I found it:**
 Checking the pod logs showed the application starting and printing: `listening on :8081`. However, running `kubectl describe pod` showed the Readiness probes were attempting to hit port `8080`, leading to connection refused errors.
 
+---
+
+## Defect 7
+
+**Symptom:**
+After fixing defects 1–6, the reporter pod stayed `0/1 Ready` and the final two checks kept failing:
+```text
+  FAIL  deployment reporter: 0/1 ready
+  FAIL  reporter /report does not return a pod count
+```
+Container logs showed:
+```text
+pod list failed: parse pod list: unexpected end of JSON input
+GET /healthz -> 503
+```
+
+**Cause:**
+The `reporter` deployment has `readOnlyRootFilesystem: true` in its security context — same as `worker`. The reporter binary (a Go application) makes outbound HTTPS calls to `kubernetes.default.svc` to list pods in the namespace. Go's `crypto/tls` and `net` packages need a writable `/tmp` directory at runtime for TLS session-ticket caching and intermediate DNS resolver operations. With no writable filesystem path available, the TLS read operation on the response body is aborted mid-stream, producing the `unexpected end of JSON input` error (the connection is closed before the full JSON payload is received). This causes `healthz` to return 503, which in turn keeps the readiness probe failing.
+
+**Fix:**
+I added an `emptyDir` volume named `tmp-volume` to `reporter.yaml` and mounted it at `/tmp` inside the container — exactly parallel to the `cache-volume` fix applied to `worker`. This gives the Go runtime a writable temp directory while preserving `readOnlyRootFilesystem: true` for the rest of the filesystem.
+
+**How I found it:**
+After confirming RBAC was correct (`kubectl auth can-i list pods --as=system:serviceaccount:debug-lab:reporter` → `yes`) and the Kubernetes API itself returned valid JSON (verified with a debug pod using the reporter's service account token and `wget --no-check-certificate`), I noticed the reporter has `readOnlyRootFilesystem: true` without a `/tmp` volume mount — unlike `worker`, which had the same security context and already needed an `emptyDir` for its writable path. The parallel pattern was the key insight: the reporter binary also needs writable temp space for its Go runtime TLS stack.
+
