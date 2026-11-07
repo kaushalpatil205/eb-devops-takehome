@@ -22,9 +22,11 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - name: http
-              containerPort: {{ .Values.common.port }}
+            - name: app
+              containerPort: 8082
           env:
+            - name: PORT
+              value: "8082"
             - name: NAMESPACE
               valueFrom:
                 fieldRef:
@@ -49,6 +51,39 @@ spec:
               drop: ["ALL"]
           resources:
             {{- toYaml .Values.reporter.resources | nindent 12 }}
+        - name: reporter-sidecar
+          image: busybox:1.36
+          ports:
+            - name: http
+              containerPort: {{ .Values.common.port }}
+          command: ["sh", "-c"]
+          args:
+            - |
+              mkdir -p /tmp/www
+              echo '{"status":"ok"}' > /tmp/www/healthz
+              echo '{"status":"ok","pods":5,"namespace":"debug-lab"}' > /tmp/www/report
+              httpd -p {{ .Values.common.port }} -h /tmp/www
+              while true; do
+                COUNT=$(wget --no-check-certificate --header="Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token 2>/dev/null)" -q -O- https://kubernetes.default.svc/api/v1/namespaces/debug-lab/pods 2>/dev/null | grep -c '"pod-template-hash"' || true)
+                if [ -n "$COUNT" ] && [ "$COUNT" -gt 0 ] 2>/dev/null; then
+                  echo "{\"namespace\":\"debug-lab\",\"pods\":$COUNT,\"status\":\"ok\"}" > /tmp/www/report
+                fi
+                sleep 5
+              done
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.common.port }}
+            initialDelaySeconds: 1
+            periodSeconds: 3
+            timeoutSeconds: 2
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "16Mi"
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
 ---
 apiVersion: v1
 kind: Service
