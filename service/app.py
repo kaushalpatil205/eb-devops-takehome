@@ -15,8 +15,24 @@ class SimpleHandler(BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
             
+            # Read from environment variables first (per Part 1 spec)
             app_name = os.environ.get('APP_NAME', 'demo-app')
             version = os.environ.get('VERSION', '1.0.0')
+            
+            # If ConfigMap is mounted as a volume, read live file updates (per Part 2/3 spec for runtime patches)
+            for path, var in [('/etc/config/APP_NAME', 'app_name'), ('/etc/config/VERSION', 'version')]:
+                if os.path.exists(path):
+                    try:
+                        with open(path, 'r', encoding='utf-8') as f:
+                            content = f.read().strip()
+                            if content:
+                                if var == 'app_name':
+                                    app_name = content
+                                elif var == 'version':
+                                    version = content
+                    except Exception:
+                        pass
+            
             pod = socket.gethostname()
             
             payload = {

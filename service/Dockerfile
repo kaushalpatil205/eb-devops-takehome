@@ -8,11 +8,11 @@ RUN python -m py_compile app.py
 FROM python:3.12.7-slim
 WORKDIR /app
 
-# Create a non-root user
-RUN groupadd -r appuser && useradd -r -g appuser -d /app -s /sbin/nologin appuser
+# Create a non-root user and group with explicit UID/GID 10001
+RUN groupadd -g 10001 appuser && useradd -u 10001 -g appuser -d /app -s /sbin/nologin appuser
 
 # Copy the verified application
-COPY --from=builder /build/app.py .
+COPY --from=builder --chown=appuser:appuser /build/app.py .
 
 # Switch to non-root user
 USER 10001:10001

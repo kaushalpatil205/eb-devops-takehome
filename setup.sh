@@ -42,6 +42,7 @@ echo "[INFO] Loading image into kind cluster..."
 kind load docker-image demo-service:latest --name demo
 
 echo "[INFO] Installing Helm release 'demo' in namespace 'demo'..."
+helm upgrade --install demo ./chart --namespace demo --create-namespace --wait --force-conflicts 2>/dev/null || \
 helm upgrade --install demo ./chart --namespace demo --create-namespace --wait
 
 echo "--------------------------------------------------------"

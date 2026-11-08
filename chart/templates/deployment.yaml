@@ -13,6 +13,8 @@ spec:
       app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
       labels:
         app.kubernetes.io/name: {{ .Chart.Name }}
         app.kubernetes.io/instance: {{ .Release.Name }}
@@ -28,6 +30,10 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "demo-service.fullname" . }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/config
+              readOnly: true
           livenessProbe:
             httpGet:
               path: /healthz
@@ -49,3 +55,7 @@ spec:
             allowPrivilegeEscalation: false
             capabilities:
               drop: ["ALL"]
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ include "demo-service.fullname" . }}
